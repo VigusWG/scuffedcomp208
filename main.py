@@ -1,4 +1,4 @@
-from flask import Flask, json, request
+from flask import Flask, json, request, render_template
 import yfinance
 import csv
 
@@ -11,7 +11,7 @@ with open('stock_info.csv') as r:
 
 @app.route('/')
 def main():
-    return 'random github'
+    return render_template("index.html")
 
 @app.route('/api/stocks')
 def getstocks():

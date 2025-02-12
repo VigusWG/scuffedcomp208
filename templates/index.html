@@ -1,0 +1,64 @@
+<head>
+    <title>Stocks</title>
+</head>
+
+<body>
+
+    <div>
+        <datalist id="suggestions">
+            <option>First option</option>
+            <option>Second Option</option>
+        </datalist>
+        <input id="search" autoComplete="on" list="suggestions" oninput="updateList()"/>
+    </div>
+
+    <div>
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        async function updateList() {
+            const input = document.getElementById("search").value.trim();
+            const datalist = document.getElementById("suggestions");
+            datalist.innerHTML = "";
+            if (input.length === 0) return;
+            const response = await fetch(`/api/stocks?s=${encodeURIComponent(input)}`);
+            const result = await response.json();
+            if (result.data && Array.isArray(result.data)) {
+                result.data.forEach(stock => {
+                    const option = document.createElement("option");
+                    option.value = stock[0];
+                    option.setAttribute("data-symbol", stock[1]);
+                    datalist.appendChild(option);
+                });
+            }
+        }
+
+
+        
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [12, 19, 3, 5, 2, 3],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
