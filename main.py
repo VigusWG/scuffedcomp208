@@ -7,7 +7,8 @@ stocks = {}
 with open('stock_info.csv') as r:
     reader = csv.reader(r)
     for row in reader:
-        stocks[row[1]] = row[0]
+        if row[2] == "NASDAQ": 
+            stocks[row[1]] = row[0]
 
 @app.route('/')
 def main():

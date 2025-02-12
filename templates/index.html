@@ -5,15 +5,12 @@
 <body>
 
     <div>
-        <datalist id="suggestions">
-            <option>First option</option>
-            <option>Second Option</option>
-        </datalist>
-        <input id="search" autoComplete="on" list="suggestions" oninput="updateList()"/>
+        <datalist id="suggestions"></datalist>
+        <input id="search" autoComplete="on" list="suggestions" oninput="updateList()" onkeydown="handleEnter(event)"/>
     </div>
 
     <div>
-        <canvas id="myChart"></canvas>
+        <canvas id="myChart" style="height: 95vh;"></canvas>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -38,27 +35,74 @@
         }
 
 
-        
-        const ctx = document.getElementById('myChart');
+        async function handleEnter(event) {
+            if (event.key !== "Enter") {return}
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+            
+            const stock = document.getElementById("suggestions").options[0].getAttribute("data-symbol")
+            const response = await fetch(`/api/stockdata?s=${stock}`);
+            const result = await response.json();
+
+            if (!result.labels || !result.Opens || !result.Closes) {
+                console.error("Invalid data format from API");
+                return;
+            }
+
+            const ctx = document.getElementById('myChart');
+
+            if (window.stockChart) {
+                window.stockChart.destroy();
+            }
+
+            window.stockChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: result.labels,
+                    datasets: [
+                        {
+                            label: "Open Price",
+                            data: result.Opens,
+                            borderColor: "blue",
+                            backgroundColor: "rgba(0, 0, 255, 0.2)",
+                        },
+                        {
+                            label: "Close Price",
+                            data: result.Closes, 
+                            borderColor: "red",
+                            backgroundColor: "rgba(255, 0, 0, 0.2)",
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Date/Time"
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 20,
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Price"
+                            },
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     </script>
 
 </body>
